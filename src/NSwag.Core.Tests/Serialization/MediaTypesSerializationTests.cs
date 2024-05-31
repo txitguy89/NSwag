@@ -169,10 +169,19 @@ namespace NSwag.Core.Tests.Serialization
                                             new OpenApiResponse
                                             {
                                                 Examples = 123,
-                                                Schema = new JsonSchema
+                                                Content =
                                                 {
-                                                    Type = type
-                                                },
+                                                    {
+                                                        "application/octet-stream",
+                                                        new OpenApiMediaType
+                                                        {
+                                                            Schema = new JsonSchema
+                                                            {
+                                                                Type = type
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }

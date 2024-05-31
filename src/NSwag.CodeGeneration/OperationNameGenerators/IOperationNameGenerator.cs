@@ -26,8 +26,9 @@ namespace NSwag.CodeGeneration.OperationNameGenerators
         /// <param name="document">The Swagger document.</param>
         /// <param name="path">The HTTP path.</param>
         /// <param name="httpMethod">The HTTP method.</param>
+        /// <param name="mediaType">The media type produced by the operation.</param>
         /// <param name="operation">The operation.</param>
         /// <returns>The operation name.</returns>
-        string GetOperationName(OpenApiDocument document, string path, string httpMethod, OpenApiOperation operation);
+        string GetOperationName(OpenApiDocument document, string path, string httpMethod, string mediaType, OpenApiOperation operation);
     }
 }

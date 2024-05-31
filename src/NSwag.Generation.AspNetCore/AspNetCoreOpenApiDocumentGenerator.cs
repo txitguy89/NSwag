@@ -261,10 +261,16 @@ namespace NSwag.Generation.AspNetCore
                             .Distinct()
                             .ToList();
 
-                        operation.Produces = apiDescription.SupportedResponseTypes
-                            .SelectMany(t => t.ApiResponseFormats.Select(f => f.MediaType))
-                            .Distinct()
-                            .ToList();
+                        //TODO: Is FilterDescriptors needed when the document is generated from OAS json?
+                        operation.Produces =
+                            apiDescription.ActionDescriptor.FilterDescriptors
+                                .Where(f => f.Filter is ProducesAttribute)
+                                .SelectMany(f => ((ProducesAttribute)f.Filter).ContentTypes)
+                                .Concat(
+                                    apiDescription.SupportedResponseTypes
+                                        .SelectMany(t => t.ApiResponseFormats.Select(f => f.MediaType)))
+                                .Distinct()
+                                .ToList();
 
                         var operationDescription = new OpenApiOperationDescription
                         {
@@ -361,12 +367,14 @@ namespace NSwag.Generation.AspNetCore
         {
             // TODO: Move to SwaggerGenerator class?
 
+            //The document only consumes the media types that are consumed by all operations
             document.Consumes = allOperations
                 .SelectMany(s => s.Item1.Operation.Consumes)
                 .Where(m => allOperations.All(o => o.Item1.Operation.Consumes.Contains(m)))
                 .Distinct()
                 .ToArray();
 
+            //The document only produces the media types that are produced by all operations
             document.Produces = allOperations
                 .SelectMany(s => s.Item1.Operation.Produces)
                 .Where(m => allOperations.All(o => o.Item1.Operation.Produces.Contains(m)))
@@ -377,6 +385,7 @@ namespace NSwag.Generation.AspNetCore
             {
                 var description = operation.Item1;
 
+                //If the document consumes the same media types as the operation, remove the consumes from the operation
                 List<string> consumes = null;
                 if (description.Operation.Consumes.Count > 0
                     && (document.Consumes.Count == 0 || description.Operation.Consumes.Any(c => !document.Consumes.Contains(c))))
@@ -385,6 +394,7 @@ namespace NSwag.Generation.AspNetCore
                 }
                 description.Operation.Consumes = consumes;
 
+                //If the document produces the same media types as the operation, remove the produces from the operation
                 List<string> produces = null;
                 if (description.Operation.Produces.Count > 0
                     && (document.Produces.Count == 0 || description.Operation.Produces.Any(c => !document.Produces.Contains(c))))

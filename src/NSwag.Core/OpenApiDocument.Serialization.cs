@@ -191,7 +191,7 @@ namespace NSwag
         [JsonProperty(PropertyName = "consumes", Order = 8, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ICollection<string> Consumes { get; set; } = new List<string>();
 
-        /// <summary>Gets or sets a list of MIME types the operation can produce.</summary>
+        /// <summary>Gets or sets a list of MIME types that all operations can produce.</summary>
         [JsonProperty(PropertyName = "produces", Order = 9, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ICollection<string> Produces { get; set; } = new List<string>();
 

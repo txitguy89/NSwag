@@ -242,15 +242,16 @@ namespace NSwag
         {
             get
             {
-                foreach (var p in _paths)
+                foreach (var path in _paths.Keys)
                 {
-                    foreach (var o in p.Value.ActualPathItem)
+                    foreach (var requestMethod in _paths[path].ActualPathItem.Keys)
                     {
+                        var operation = _paths[path].ActualPathItem[requestMethod];
                         yield return new OpenApiOperationDescription
                         {
-                            Path = p.Key,
-                            Method = o.Key,
-                            Operation = o.Value
+                            Path = path,
+                            Method = requestMethod,
+                            Operation = operation
                         };
                     }
                 }

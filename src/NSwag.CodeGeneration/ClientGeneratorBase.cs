@@ -157,26 +157,29 @@ namespace NSwag.CodeGeneration
                     var path = pair.Key.TrimStart('/');
                     var httpMethod = p.Key;
                     var operation = p.Value;
-
-                    var operationName = BaseSettings.OperationNameGenerator.GetOperationName(document, path, httpMethod, operation);
-
-                    if (operationName.Contains("."))
+                    
+                    foreach (var mediaType in operation.Produces)
                     {
-                        operationName = operationName.Replace(".", "_");
+                        var operationName = BaseSettings.OperationNameGenerator.GetOperationName(document, path, httpMethod, mediaType, operation);
+
+                        if (operationName.Contains("."))
+                        {
+                            operationName = operationName.Replace(".", "_");
+                        }
+
+                        if (operationName.EndsWith("Async"))
+                        {
+                            operationName = operationName.Substring(0, operationName.Length - "Async".Length);
+                        }
+
+                        var operationModel = CreateOperationModel(operation, BaseSettings);
+                        operationModel.ControllerName = BaseSettings.OperationNameGenerator.GetClientName(document, path, httpMethod, operation);
+                        operationModel.Path = path;
+                        operationModel.HttpMethod = httpMethod;
+                        operationModel.OperationName = operationName;
+
+                        result.Add(operationModel);
                     }
-
-                    if (operationName.EndsWith("Async"))
-                    {
-                        operationName = operationName.Substring(0, operationName.Length - "Async".Length);
-                    }
-
-                    var operationModel = CreateOperationModel(operation, BaseSettings);
-                    operationModel.ControllerName = BaseSettings.OperationNameGenerator.GetClientName(document, path, httpMethod, operation);
-                    operationModel.Path = path;
-                    operationModel.HttpMethod = httpMethod;
-                    operationModel.OperationName = operationName;
-
-                    result.Add(operationModel);
                 }
             }
             return result;

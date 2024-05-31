@@ -7,17 +7,16 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using NJsonSchema;
 
 namespace NSwag.CodeGeneration.OperationNameGenerators
 {
     /// <summary>Generates multiple clients and operation names based on the Swagger operation ID (underscore separated).</summary>
-    public class MultipleClientsFromOperationIdOperationNameGenerator : IOperationNameGenerator
+    public class MultipleClientsFromOperationIdOperationNameGenerator : OperationNameGeneratorBase, IOperationNameGenerator
     {
         /// <summary>Gets a value indicating whether the generator supports multiple client classes.</summary>
-        public bool SupportsMultipleClients { get; } = true;
+        public override bool SupportsMultipleClients { get; } = true;
 
         /// <summary>Gets the client name for a given operation (may be empty).</summary>
         /// <param name="document">The Swagger document.</param>
@@ -25,7 +24,7 @@ namespace NSwag.CodeGeneration.OperationNameGenerators
         /// <param name="httpMethod">The HTTP method.</param>
         /// <param name="operation">The operation.</param>
         /// <returns>The client name.</returns>
-        public virtual string GetClientName(OpenApiDocument document, string path, string httpMethod, OpenApiOperation operation)
+        public override string GetClientName(OpenApiDocument document, string path, string httpMethod, OpenApiOperation operation)
         {
             return GetClientName(operation).ToString();
         }
@@ -34,9 +33,10 @@ namespace NSwag.CodeGeneration.OperationNameGenerators
         /// <param name="document">The Swagger document.</param>
         /// <param name="path">The HTTP path.</param>
         /// <param name="httpMethod">The HTTP method.</param>
+        /// <param name="mediaType">The media type produced by the operation.</param>
         /// <param name="operation">The operation.</param>
         /// <returns>The operation name.</returns>
-        public virtual string GetOperationName(OpenApiDocument document, string path, string httpMethod, OpenApiOperation operation)
+        public override string GetOperationName(OpenApiDocument document, string path, string httpMethod, string mediaType, OpenApiOperation operation)
         {
             var clientName = GetClientName(operation);
             var operationName = GetOperationName(operation);

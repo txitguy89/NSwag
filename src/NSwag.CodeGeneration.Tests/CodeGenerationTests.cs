@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -221,7 +220,8 @@ public static Person FromJson(string data)
             var path = "/my/path/with/{parameter_with_underscore}/and/{another_parameter}";
 
             // Act
-            var operationName = SingleClientFromPathSegmentsOperationNameGenerator.ConvertPathToName(path);
+            var operationNameGenerator = new SingleClientFromPathSegmentsOperationNameGenerator();
+            var operationName = operationNameGenerator.ConvertPathToName(path);
 
             // Assert
             Assert.DoesNotContain("{", operationName);
@@ -271,9 +271,10 @@ public static Person FromJson(string data)
             var document = new OpenApiDocument();
             var path = string.Empty;
             var httpMethod = string.Empty;
+            var mediaType = string.Empty;
 
             // Act
-            string operationName = generator.GetOperationName(document, path, httpMethod, operation);
+            string operationName = generator.GetOperationName(document, path, httpMethod, mediaType, operation);
 
             // Assert
             Assert.Equal(expectedOperationName, operationName);

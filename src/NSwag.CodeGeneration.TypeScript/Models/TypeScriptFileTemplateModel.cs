@@ -75,7 +75,9 @@ namespace NSwag.CodeGeneration.TypeScript.Models
                 if (_settings.OperationNameGenerator.SupportsMultipleClients)
                 {
                     return _document.Operations
-                        .GroupBy(o => _settings.OperationNameGenerator.GetClientName(_document, o.Path, o.Method, o.Operation))
+                            .SelectMany(opDescription => opDescription.Operation.Produces
+                                .Select(mediaType => new { opDescription.Path, opDescription.Method, opDescription.Operation, mediaType }))
+                        .GroupBy(o => _settings.OperationNameGenerator.GetClientName(_document, o.Path, o.Method, o.Operation) + o.mediaType)
                         .Select(g => _settings.ResponseClass.Replace("{controller}", g.Key))
                         .Where(a => _settings.TypeScriptGeneratorSettings.ExcludedTypeNames?.Contains(a) != true)
                         .Distinct();

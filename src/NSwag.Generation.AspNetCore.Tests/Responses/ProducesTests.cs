@@ -54,5 +54,60 @@ namespace NSwag.Generation.AspNetCore.Tests.Responses
             Assert.Contains(expectedJsonJsonType, jsonOperation.Produces);
             Assert.Contains(expectedJsonJsonType, jsonOperation.ActualProduces);
         }
+
+        [Fact]
+        public async Task When_operation_produces_multiple_types_that_vary_by_controller_then_they_are_added_to_the_operations()
+        {
+            // Arrange
+            var settings = new AspNetCoreOpenApiDocumentGeneratorSettings { SchemaSettings = new NewtonsoftJsonSchemaGeneratorSettings { SchemaType = SchemaType.OpenApi3 } };
+
+            // Act
+            var document = await GenerateDocumentAsync(settings, typeof(AcceptHeaderProducesController), typeof(TextProducesController));
+            var json = document.ToJson();
+
+            // Assert
+            const string expectedTextContentType = "text/html";
+            const string expectedStandardJsonType = "application/json";
+            const string expectedExtendedJsonType = "application/type1+json";
+
+            var textOperation = document.Operations.First(o => o.Operation.OperationId == "TextProduces_ProducesOnOperation").Operation;
+            var acceptHeaderOperation = document.Operations.First(o => o.Operation.OperationId == "AcceptHeaderProduces_ProducesOnOperation").Operation;
+
+            Assert.DoesNotContain(expectedTextContentType, document.Produces);
+            Assert.DoesNotContain(expectedStandardJsonType, document.Produces);
+            Assert.DoesNotContain(expectedExtendedJsonType, document.Produces);
+
+            Assert.Contains(expectedTextContentType, textOperation.Produces);
+            Assert.Contains(expectedTextContentType, textOperation.ActualProduces);
+
+            Assert.Contains(expectedStandardJsonType, acceptHeaderOperation.Produces);
+            Assert.Contains(expectedStandardJsonType, acceptHeaderOperation.ActualProduces);
+
+            Assert.Contains(expectedExtendedJsonType, acceptHeaderOperation.Produces);
+            Assert.Contains(expectedExtendedJsonType, acceptHeaderOperation.ActualProduces);
+        }
+
+        [Fact]
+        public async Task When_operation_produces_multiple_types_defined_on_all_operations_then_they_are_added_to_the_document()
+        {
+            // Arrange
+            var settings = new AspNetCoreOpenApiDocumentGeneratorSettings { SchemaSettings = new NewtonsoftJsonSchemaGeneratorSettings { SchemaType = SchemaType.OpenApi3 } };
+
+            // Act
+            var document = await GenerateDocumentAsync(settings, typeof(AcceptHeaderProducesController));
+            var json = document.ToJson();
+
+            // Assert
+            const string expectedStandardJsonType = "application/json";
+            const string expectedExtendedJsonType = "application/type1+json";
+
+            var operation = document.Operations.First(o => o.Operation.OperationId == "AcceptHeaderProduces_ProducesOnOperation").Operation;
+
+            Assert.Contains(expectedStandardJsonType, document.Produces);
+            Assert.Contains(expectedExtendedJsonType, document.Produces);
+            Assert.Null(operation.Produces);
+            Assert.Contains(expectedStandardJsonType, operation.ActualProduces);
+            Assert.Contains(expectedExtendedJsonType, operation.ActualProduces);
+        }
     }
 }

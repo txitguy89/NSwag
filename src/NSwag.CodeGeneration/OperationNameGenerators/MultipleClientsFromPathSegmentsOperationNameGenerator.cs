@@ -11,10 +11,10 @@ using System.Linq;
 namespace NSwag.CodeGeneration.OperationNameGenerators
 {
     /// <summary>Generates the client and operation name based on the path segments (operation name = last segment, client name = second to last segment).</summary>
-    public class MultipleClientsFromPathSegmentsOperationNameGenerator : IOperationNameGenerator
+    public class MultipleClientsFromPathSegmentsOperationNameGenerator : OperationNameGeneratorBase, IOperationNameGenerator
     {
         /// <summary>Gets a value indicating whether the generator supports multiple client classes.</summary>
-        public bool SupportsMultipleClients { get; } = true;
+        public override bool SupportsMultipleClients { get; } = true;
 
         /// <summary>Gets the client name for a given operation (may be empty).</summary>
         /// <param name="document">The Swagger document.</param>
@@ -22,7 +22,7 @@ namespace NSwag.CodeGeneration.OperationNameGenerators
         /// <param name="httpMethod">The HTTP method.</param>
         /// <param name="operation">The operation.</param>
         /// <returns>The client name.</returns>
-        public virtual string GetClientName(OpenApiDocument document, string path, string httpMethod, OpenApiOperation operation)
+        public override string GetClientName(OpenApiDocument document, string path, string httpMethod, OpenApiOperation operation)
         {
             return path
                 .Split('/')
@@ -36,15 +36,16 @@ namespace NSwag.CodeGeneration.OperationNameGenerators
         /// <param name="document">The Swagger document.</param>
         /// <param name="path">The HTTP path.</param>
         /// <param name="httpMethod">The HTTP method.</param>
+        /// <param name="mediaType">The media type produced by the operation.</param>
         /// <param name="operation">The operation.</param>
         /// <returns>The client name.</returns>
-        public virtual string GetOperationName(OpenApiDocument document, string path, string httpMethod, OpenApiOperation operation)
+        public override string GetOperationName(OpenApiDocument document, string path, string httpMethod, string mediaType, OpenApiOperation operation)
         {
             var operationName = ConvertPathToName(path);
 
             var hasNameConflict = document.Paths
                 .SelectMany(pair => pair.Value.ActualPathItem
-                    .Select(p => new { Path = pair.Key.Trim('/'), HttpMethod = p.Key, Operation = p.Value }))
+                    .Select(p => new { Path = pair.Key.Trim('/'), HttpMethod = p.Key, p.Value.Produces, Operation = p.Value }))
                 .Where(op => 
                     GetClientName(document, op.Path, op.HttpMethod, op.Operation) == GetClientName(document, path, httpMethod, operation) && 
                     ConvertPathToName(op.Path) == operationName
@@ -57,18 +58,6 @@ namespace NSwag.CodeGeneration.OperationNameGenerators
             }
 
             return operationName;
-        }
-
-        /// <summary>Converts the path to an operation name.</summary>
-        /// <param name="path">The HTTP path.</param>
-        /// <returns>The operation name.</returns>
-        internal static string ConvertPathToName(string path)
-        {
-            return path
-                .Split('/')
-                .Where(p => !p.Contains("{") && !string.IsNullOrWhiteSpace(p))
-                .Reverse()
-                .FirstOrDefault() ?? "Index";
         }
 
         /// <summary>Capitalizes first letter.</summary>
